@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from .core import settings 
-from .handlers import start_router
+from .handlers import start_router, voice_router
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,9 @@ async def main() -> None:
     logger.info('Starting bot')
     bot = Bot(token=settings.get_bot_settings())
     dp = Dispatcher()
-    
+
     dp.include_router(start_router)
+    dp.include_router(voice_router)
     # dp.workflow_data.update(...)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
