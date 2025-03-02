@@ -20,7 +20,6 @@ async def main() -> None:
 
     dp.include_router(start_router)
     dp.include_router(voice_router)
-    # dp.workflow_data.update(...)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
