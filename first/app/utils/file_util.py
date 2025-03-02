@@ -15,3 +15,12 @@ async def get_transcribtion(audio_file):
         file=("voice.ogg", audio_file)
     )
     return response.text
+
+async def voice_acting(text):
+    client = settings.get_ai_settings()
+    response = await client.audio.speech.create(
+        model="tts-1",
+        voice="nova",
+        input=text
+    )
+    return response.read()
