@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379" 
+    networks:
+      - happy_network
+
+  happy_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: happy_bot_container
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis 
+      - REDIS_PORT=6379
+    ports:
+      - "8000:8000" 
+    networks:
+      - happy_network
+
+networks:
+  happy_network:
+    driver: bridge

@@ -2,3 +2,4 @@ aiogram
 pydantic-settings
 openai
 httpx
+redis

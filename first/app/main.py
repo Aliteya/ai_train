@@ -2,7 +2,7 @@ import logging
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
+from .utils import create_assist
 from .core import settings 
 from .handlers import start_router, voice_router
 
@@ -17,7 +17,7 @@ async def main() -> None:
     logger.info('Starting bot')
     bot = Bot(token=settings.get_bot_settings())
     dp = Dispatcher()
-
+    await create_assist()
     dp.include_router(start_router)
     dp.include_router(voice_router)
     await bot.delete_webhook(drop_pending_updates=True)
