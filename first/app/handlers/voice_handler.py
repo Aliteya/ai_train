@@ -20,7 +20,7 @@ async def hear_voice(message: Message):
 @voice_router.message(Command("new_thread"))
 async def new_thread_command(message: Message):
     user_id = message.from_user.id
-    thread_id = await get_thread(user_id, message)
+    thread_id = await get_thread(user_id)
     redis_client = settings.get_db()
     if thread_id:
         redis_client.delete(f"user:{user_id}:thread_id")
