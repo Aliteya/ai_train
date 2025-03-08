@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     def get_ai_settings(self):
         return AsyncOpenAI(api_key=self.AI_TOKEN)
     
-    def get_db(self):
+    def get_thread_db(self):
         if self.REDIS_URL != "":
             return redis.from_url(self.REDIS_URL, decode_responses=True)
         else: 
@@ -32,3 +32,20 @@ class Settings(BaseSettings):
         return self.ASSISTANT_ID
     
 settings = Settings()
+
+class TreasureSettings(BaseSettings):
+    DB_NAME: str
+    DB_USER: str
+    DB_HOST: str
+    DB_PORT: str
+    DB_PASSWORD: str
+
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.env"),
+        extra="ignore"
+    )
+
+    def get_treasure_url(self):
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    
+treasure_db_settings = TreasureSettings()

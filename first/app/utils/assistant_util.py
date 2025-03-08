@@ -9,12 +9,11 @@ async def get_thread(user_id):
 
 async def ask_question(user_id, question: str):
     client = settings.get_ai_settings()
-    redis_client = settings.get_db()
+    redis_client = settings.get_thread_db()
     assistant_id = settings.get_assistant()
     
     thread_id = await get_thread(user_id)
     if not thread_id: 
-        print("!!!!!!!!!!!!!!!!!!!!!NEW THREAD!!!!!!!!!!!!!")
         thread = await client.beta.threads.create()
         redis_client.set(f"user:{user_id}:thread_id", thread.id)
         thread_id = thread.id

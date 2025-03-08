@@ -3,3 +3,6 @@ pydantic-settings
 openai
 httpx
 redis
+sqlalchemy
+asyncpg
+alembic
