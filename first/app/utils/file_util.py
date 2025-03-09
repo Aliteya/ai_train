@@ -1,5 +1,4 @@
 from aiogram import Bot
-import uuid
 from ..core import settings
 
 async def save_voice_file(bot: Bot, file_id):
