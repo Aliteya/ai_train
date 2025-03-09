@@ -15,3 +15,13 @@ def connection(method):
                 await session.rollback()
                 raise e
     return wrapper
+
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+async def close_db_connections():
+    try:
+        await engine.dispose()
+    except Exception as e:
+        print(f"Ошибка при закрытии соединений: {e}")

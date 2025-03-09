@@ -28,11 +28,12 @@ services:
     container_name: happy_bot_container
     depends_on:
       - redis
+      - postgres
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
+      - DB_HOST=postgres
       - DB_PORT=${DB_PORT}
       - REDIS_HOST=redis 
       - REDIS_PORT=6379

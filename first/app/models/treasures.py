@@ -4,7 +4,7 @@ from sqlalchemy import TIMESTAMP, func
 from datetime import datetime
 
 class Treasure(Base):
-    __tablename__ = "tresures"
+    __tablename__ = "treasures"
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     user_id: Mapped[str] = mapped_column(nullable=False)
