@@ -3,6 +3,7 @@ from aiogram.types import Message, BufferedInputFile
 from ..utils import save_voice_file, get_transcribtion, ask_question, voice_acting, get_thread
 from aiogram.filters import Command
 from ..core import settings
+import os
 
 voice_router = Router()
 
