@@ -6,3 +6,4 @@ redis
 sqlalchemy
 asyncpg
 alembic
+amplitude-analytics

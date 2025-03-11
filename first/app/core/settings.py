@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 from openai import AsyncOpenAI
+from amplitude import Amplitude, BaseEvent
 
 from typing import Optional
 import redis
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
     AI_TOKEN: str
     REDIS_URL: Optional[str]
     ASSISTANT_ID: Optional[str] = None
+    AMPLITUDE_TOKEN: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.env"),
@@ -30,6 +32,9 @@ class Settings(BaseSettings):
     
     def get_assistant(self):
         return self.ASSISTANT_ID
+    
+    def get_amplitude_token(self):
+        return Amplitude(self.AMPLITUDE_TOKEN)
     
 settings = Settings()
 

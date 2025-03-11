@@ -6,7 +6,10 @@ from .utils import create_assist
 from .core import settings 
 from .handlers import start_router, voice_router, photo_router
 from .database import init_db, close_db_connections
+
+
 logger = logging.getLogger(__name__)
+
 
 
 async def main() -> None:
@@ -18,6 +21,7 @@ async def main() -> None:
         logger.info('Starting bot')
         bot = Bot(token=settings.get_bot_settings())
         dp = Dispatcher()
+
         await create_assist()
         await init_db()
         dp.include_router(start_router)

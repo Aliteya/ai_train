@@ -1,6 +1,5 @@
 from aiogram import Bot
 from ..core import settings
-import io
 
 async def save_file(bot: Bot, file_id):
     file = await bot.get_file(file_id)
@@ -33,10 +32,3 @@ async def upload_photo(image_file, user_id):
         purpose="vision"
     )
     return response.id
-
-# async def save_photo_file(bot: Bot, file_id):
-#     file = await bot.get_file(file_id)
-#     file_path = file.file_path
-#     with await bot.download_file(file_path) as downloaded_file:
-#         downloaded_file.seek(0)
-#         return downloaded_file.getvalue() 

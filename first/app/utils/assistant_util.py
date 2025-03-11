@@ -1,8 +1,9 @@
 from ..core import settings
-from .tread_util import get_thread
+from .thread_util import get_thread, send_amplitude_event
 from ..repository import save_value
 import json
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,13 @@ async def value_interceptor_processing(user_id: str, run, tool):
             logger.warning(f"Validation failed for value: {value_text}")
             return f"Validation failed for value: {value_text}"
         
+        send_amplitude_event(
+            user_id=str(user_id),
+            event_type="value_saved",
+            event_properties={
+                "value": value_text
+            }
+        )
         await save_value(user_id=user_id, value=value_text)
         logger.info(f"Value '{value_text}' saved successfully")
         return f"Value '{value_text}' saved successfully"
