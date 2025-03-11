@@ -1,4 +1,5 @@
 from ..core import settings
+from .tread_util import get_thread
 from ..repository import save_value
 import json
 import logging
@@ -10,12 +11,6 @@ logging.basicConfig(
     format='%(filename)s:%(lineno)d #%(levelname)-8s '
         '[%(asctime)s] - %(name)s - %(message)s')
 
-async def get_thread(user_id: str): 
-    redis_client = settings.get_thread_db()
-    thread_id = redis_client.get(f"user:{user_id}:thread_id")
-    if thread_id:
-        return thread_id 
-    
 async def validate(value_text: str) -> bool:
     client = settings.get_ai_settings()
     prompt = (
@@ -26,9 +21,7 @@ async def validate(value_text: str) -> bool:
     response = await client.completions.create(
         model="gpt-3.5-turbo-instruct",
         prompt=prompt,
-        # max_tokens=3,
         temperature=0.0
-        # stop=["\n"]
     )
     logger.warning(f"{response}")
     answer = response.choices[0].text.strip().lower()
@@ -80,8 +73,12 @@ async def ask_question(user_id: str, question: str):
     logger.debug(f"Run status: {run.status}", run)
 
     if run.status == "completed":
-        messages = await client.beta.threads.messages.list(thread_id=thread_id, order="asc")
-        answer =  messages.data[-1].content[0].text.value if messages else "no response"
+        messages = await client.beta.threads.messages.list(thread_id=thread_id)
+        assistant_messages = [
+            msg for msg in messages.data if msg.role == "assistant"
+        ]
+        last_message = assistant_messages[0]
+        answer = last_message.content[0].text.value.strip()
         logger.debug(answer)
 
     if run.status == "requires_action":
@@ -107,7 +104,11 @@ async def ask_question(user_id: str, question: str):
                     return f"Failed to submit tool outputs. Error: {e}"  
              
     if run.status == "completed":
-        messages = await client.beta.threads.messages.list(thread_id=thread_id, order="asc")
-        answer =  messages.data[-1].content[0].text.value if messages else "no response"
+        messages = await client.beta.threads.messages.list(thread_id=thread_id)
+        assistant_messages = [
+            msg for msg in messages.data if msg.role == "assistant"
+        ]
+        last_message = assistant_messages[0]
+        answer = last_message.content[0].text.value.strip()
         return answer
     return f"Failed to create an answer. Run status {run.status}"

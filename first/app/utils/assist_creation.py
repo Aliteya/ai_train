@@ -7,7 +7,7 @@ async def create_assist():
         assistant = await client.beta.assistants.create(
             name="assistant",
             instructions="You are a kind and funny psychologist. When you identify an important value or experience, call the save_value function. The user_id will be provided by the bot when the function is called.",
-            model="gpt-4", 
+            model="gpt-4o", 
             tools=[
                 { 
                     "type": "function",
