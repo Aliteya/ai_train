@@ -96,6 +96,7 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
             if text:
                 answer += text[0]
                 logger.info(f"Extracted text: {text}")
+                return answer
             else:
                 logger.warning("No matching text found in annotation.")
         except Exception as e:
