@@ -4,12 +4,10 @@ from openai import AsyncOpenAI
 from amplitude import Amplitude, BaseEvent
 
 from typing import Optional
-import redis
 
 class Settings(BaseSettings):
     BOT_TOKEN: str
     AI_TOKEN: str
-    REDIS_URL: Optional[str]
     ASSISTANT_ID: Optional[str] = None
     AMPLITUDE_TOKEN: str
 
@@ -23,12 +21,6 @@ class Settings(BaseSettings):
     
     def get_ai_settings(self):
         return AsyncOpenAI(api_key=self.AI_TOKEN)
-    
-    def get_thread_db(self):
-        if self.REDIS_URL != "":
-            return redis.from_url(self.REDIS_URL, decode_responses=True)
-        else: 
-            return redis.Redis(host="redis", port=6379, decode_responses=True)
     
     def get_assistant(self):
         return self.ASSISTANT_ID
@@ -54,3 +46,21 @@ class TreasureSettings(BaseSettings):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
     
 treasure_db_settings = TreasureSettings()
+
+class RedisSettings(BaseSettings):
+    REDIS_USER: Optional[str]
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_PASSWORD: Optional[str]
+
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.env"),
+        extra="ignore"
+    )
+
+    def get_thread_db(self):
+        if not self.REDIS_PASSWORD and not self.REDIS_USER:
+            return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
+        return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}"
+    
+redis_settings = RedisSettings()

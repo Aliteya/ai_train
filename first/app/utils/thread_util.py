@@ -1,5 +1,6 @@
 from ..core import settings
 from amplitude import BaseEvent
+from aiogram.fsm.context import FSMContext
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
@@ -24,8 +25,12 @@ def send_amplitude_event(user_id: str, event_type: str, event_properties: dict =
     except Exception as e:
         print(f"Failed to send event to Amplitude: {e}")
 
-async def get_thread(user_id: str): 
-    redis_client = settings.get_thread_db()
-    thread_id = redis_client.get(f"user:{user_id}:thread_id")
-    if thread_id:
-        return thread_id 
+async def get_thread(state: FSMContext): 
+    client = settings.get_ai_settings()
+    data = await state.get_data()
+    thread_id = data.get("thread_id")
+    if not thread_id:
+        thread = await client.beta.threads.create()
+        thread_id = thread.id
+        await state.update_data(thread_id=thread_id)
+    return thread_id

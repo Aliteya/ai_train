@@ -1,6 +1,7 @@
 from ..core import settings
 from .thread_util import get_thread, send_amplitude_event
 from ..repository import save_value
+from aiogram.fsm.context import FSMContext
 import json
 import logging
 
@@ -12,10 +13,11 @@ logging.basicConfig(
     format='%(filename)s:%(lineno)d #%(levelname)-8s '
         '[%(asctime)s] - %(name)s - %(message)s')
 
+
 async def validate(value_text: str) -> bool:
     client = settings.get_ai_settings()
     prompt = (
-            "Is the following value meaningful and appropriate? User Loves or Dislikes value? "
+            "User Loves or Dislikes value?"
             "Answer strictly with 'yes' or 'no' without any additional text.\n\n"
             f"Value: {value_text}"
         )
@@ -58,16 +60,11 @@ async def value_interceptor_processing(user_id: str, run, tool):
         logger.error(f"Error processing tool {tool.id}: {e}")
         return f"Error processing tool {tool.id}: {e}"
     
-async def ask_question(user_id: str, question: str):
+async def ask_question(user_id: str, question: str, state: FSMContext):
     client = settings.get_ai_settings()
-    redis_client = settings.get_thread_db()
     assistant_id = settings.get_assistant()
     
-    thread_id = await get_thread(user_id)
-    if not thread_id: 
-        thread = await client.beta.threads.create()
-        redis_client.set(f"user:{user_id}:thread_id", thread.id)
-        thread_id = thread.id
+    thread_id = await get_thread(state)
 
     await client.beta.threads.messages.create(
         thread_id=thread_id,
@@ -78,22 +75,11 @@ async def ask_question(user_id: str, question: str):
         thread_id=thread_id,
         assistant_id=assistant_id
     )
-    logger.debug(f"Run status: {run.status}", run)
-
-    if run.status == "completed":
-        messages = await client.beta.threads.messages.list(thread_id=thread_id)
-        assistant_messages = [
-            msg for msg in messages.data if msg.role == "assistant"
-        ]
-        last_message = assistant_messages[0]
-        answer = last_message.content[0].text.value.strip()
-        logger.debug(answer)
 
     if run.status == "requires_action":
-        logger.debug("requires_action")
         tool_outputs = []
         for tool in run.required_action.submit_tool_outputs.tool_calls:
-            logger.debug(tool, tool.function.name, tool.function.arguments)
+            logging.warning(tool, tool.function.name, tool.function.arguments)
             if tool.function.name == "save_value":
                     output = await value_interceptor_processing(user_id, run, tool)
                     tool_outputs.append({
@@ -113,10 +99,18 @@ async def ask_question(user_id: str, question: str):
              
     if run.status == "completed":
         messages = await client.beta.threads.messages.list(thread_id=thread_id)
+        logging.warning(messages)
         assistant_messages = [
             msg for msg in messages.data if msg.role == "assistant"
         ]
         last_message = assistant_messages[0]
         answer = last_message.content[0].text.value.strip()
+        filename = None
+        logging.warning(run)
+        if hasattr(run, "usage") and hasattr(run.usage, "file_ids"):
+            logging.warning("RUN USAGE", run.usage, "---------", run.usage.file_ids)
+            file_ids = run.usage.file_ids
+            if file_ids:
+                filename = await client.files.retrieve(file_ids[0])
         return answer
     return f"Failed to create an answer. Run status {run.status}"

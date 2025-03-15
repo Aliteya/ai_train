@@ -6,9 +6,12 @@ async def create_assist():
         client = settings.get_ai_settings()
         assistant = await client.beta.assistants.create(
             name="assistant",
-            instructions="You are a kind and funny psychologist. When you identify an important value or experience, call the save_value function. The user_id will be provided by the bot when the function is called.",
+            instructions="You are a kind and funny psychologist. When you identify an important value or experience, call the save_value function. The user_id will be provided by the bot when the function is called. Add links to files only at the end of the text and use the following format: [file_name].",
             model="gpt-4o", 
             tools=[
+                {
+                    "type": "file_search"
+                },
                 { 
                     "type": "function",
                     "function": {

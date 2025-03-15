@@ -1,6 +1,8 @@
 from ..core import settings
 from .thread_util import get_thread
 from .file_util import upload_photo
+from aiogram.fsm.context import FSMContext
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,21 +12,13 @@ logging.basicConfig(
     format='%(filename)s:%(lineno)d #%(levelname)-8s '
         '[%(asctime)s] - %(name)s - %(message)s')
 
-async def mood_determination(user_id, image_file):
+async def mood_determination(user_id, image_file, state: FSMContext):
     try:
         client = settings.get_ai_settings()
-        redis_client = settings.get_thread_db()
         assistant_id = settings.get_assistant()
         logger.info(f"Initialized AI settings for user {user_id}")
 
-        thread_id = await get_thread(user_id)
-        if not thread_id:
-            thread = await client.beta.threads.create()
-            redis_client.set(f"user:{user_id}:thread_id", thread.id)
-            thread_id = thread.id
-            logger.info(f"Created new thread for user {user_id}: {thread_id}")
-        else:
-            logger.info(f"Using existing thread for user {user_id}: {thread_id}")
+        thread_id = await get_thread(state)
 
         file_id = await upload_photo(image_file, user_id)
         logger.info(f"Uploaded photo with file ID: {file_id}")
