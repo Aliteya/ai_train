@@ -1,9 +1,9 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 import os
 from openai import AsyncOpenAI
-from amplitude import Amplitude, BaseEvent
+from amplitude import Amplitude
 
-from typing import Optional
 
 class Settings(BaseSettings):
     BOT_TOKEN: str

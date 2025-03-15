@@ -1,4 +1,5 @@
 from ..core import settings
+
 from amplitude import BaseEvent
 from aiogram.fsm.context import FSMContext
 from concurrent.futures import ThreadPoolExecutor

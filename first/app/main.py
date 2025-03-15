@@ -1,14 +1,13 @@
-import logging
-import asyncio
-from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.redis import RedisStorage
+from .logging import logger
 from .utils import create_assist, create_vector_store
 from .core import settings, redis_settings
 from .handlers import start_router, voice_router, photo_router
 from .database import init_db, close_db_connections
-from redis.asyncio import Redis
 
-logger = logging.getLogger(__name__)
+import asyncio
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.redis import RedisStorage
+from redis.asyncio import Redis
 
 async def initialize_redis():
     redis = Redis.from_url(redis_settings.get_thread_db())
@@ -20,10 +19,6 @@ async def initialize_bot_and_dispatcher(storage):
     return bot, dp
 
 async def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(filename)s:%(lineno)d #%(levelname)-8s '
-               '[%(asctime)s] - %(name)s - %(message)s')
     try:
 
         logger.info('Starting bot')

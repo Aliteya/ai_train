@@ -1,16 +1,9 @@
 from ..core import settings
 from .thread_util import get_thread
 from .file_util import upload_photo
+from ..logging import logger
+
 from aiogram.fsm.context import FSMContext
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(filename)s:%(lineno)d #%(levelname)-8s '
-        '[%(asctime)s] - %(name)s - %(message)s')
 
 async def mood_determination(user_id, image_file, state: FSMContext):
     try:

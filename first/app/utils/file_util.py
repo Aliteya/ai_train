@@ -1,5 +1,6 @@
-from aiogram import Bot
 from ..core import settings
+
+from aiogram import Bot
 
 async def save_file(bot: Bot, file_id):
     file = await bot.get_file(file_id)

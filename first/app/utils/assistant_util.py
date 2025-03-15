@@ -1,23 +1,16 @@
 from ..core import settings
 from .thread_util import get_thread, send_amplitude_event
 from ..repository import save_value
+from ..logging import logger
+
 from aiogram.fsm.context import FSMContext
 import json
-import logging
-
-
-logger = logging.getLogger(__name__)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(filename)s:%(lineno)d #%(levelname)-8s '
-        '[%(asctime)s] - %(name)s - %(message)s')
 
 
 async def validate(value_text: str) -> bool:
     client = settings.get_ai_settings()
     prompt = (
-            "User Loves or Dislikes value?"
+            "User Loves or hate value?"
             "Answer strictly with 'yes' or 'no' without any additional text.\n\n"
             f"Value: {value_text}"
         )
@@ -26,7 +19,7 @@ async def validate(value_text: str) -> bool:
         prompt=prompt,
         temperature=0.0
     )
-    logger.warning(f"{response}")
+    logger.info(f"{response}")
     answer = response.choices[0].text.strip().lower()
     return answer == "yes"
     
@@ -57,7 +50,7 @@ async def value_interceptor_processing(user_id: str, run, tool):
         return f"Value '{value_text}' saved successfully"
 
     except Exception as e:
-        logger.error(f"Error processing tool {tool.id}: {e}")
+        logger.exception(f"Error processing tool {tool.id}: {e}")
         return f"Error processing tool {tool.id}: {e}"
     
 async def ask_question(user_id: str, question: str, state: FSMContext):
@@ -93,7 +86,7 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
                         tool_outputs=tool_outputs
                     )
             except Exception as e:
-                    logger.error(f"Failed to submit tool outputs: {e}")
+                    logger.exception(f"Failed to submit tool outputs: {e}")
                     return f"Failed to submit tool outputs. Error: {e}"  
              
     if run.status == "completed":

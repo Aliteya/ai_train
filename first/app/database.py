@@ -1,6 +1,7 @@
 from .core import treasure_db_settings
 from .models import Base
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 engine = create_async_engine(treasure_db_settings.get_treasure_url(), echo=True, isolation_level="READ COMMITTED")
 

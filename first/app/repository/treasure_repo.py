@@ -1,21 +1,9 @@
 from ..database import connection
+from ..models import Treasure
+from ..logging import logger 
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from ..models import Treasure
-import logging 
-
-
-logger = logging.getLogger(__name__)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(filename)s:%(lineno)d #%(levelname)-8s '
-        '[%(asctime)s] - %(name)s - %(message)s')
-
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 @connection
 async def save_value(session: AsyncSession, user_id: int, value: str):
@@ -30,5 +18,5 @@ async def save_value(session: AsyncSession, user_id: int, value: str):
         await session.rollback()
         logger.warning("duplicate value")
     except Exception as e:
-        logger.error(f"create_new_treasure:{str(e)}", exc_info=True)
+        logger.exception(f"create_new_treasure:{str(e)}")
         await session.rollback()
