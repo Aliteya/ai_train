@@ -88,14 +88,25 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
         logger.info(f"{messages}\n\n")
         last_message = assistant_messages[0]
         
-        # logger.info(f"{last_message.content[0].text.annotations[0].text}\n\n")
-        
-        answer = last_message.content[0].text.value.strip() 
-        if last_message.content[0].text.annotations[0].text:
+
+        answer = last_message.content[0].text.value.strip()
+        try:
             import re
             text = re.findall(r"【.*?†(\w+)\.docx】", last_message.content[0].text.annotations[0].text)
+            if text:
+                answer += text[0]
+                logger.info(f"Extracted text: {text}")
+            else:
+                logger.warning("No matching text found in annotation.")
+        except Exception as e:
+            return answer 
+        
+        # answer = last_message.content[0].text.value.strip() 
+        # if last_message.content[0].text.annotations[0].text:
+        #     import re
+        #     text = re.findall(r"【.*?†(\w+)\.docx】", last_message.content[0].text.annotations[0].text)
     
-            answer += text[0]
-            logger.info(f'{text}')
-        return answer 
+        #     answer += text[0]
+        #     logger.info(f'{text}')
+        
     return f"Failed to create an answer. Run status {run.status}"
