@@ -17,14 +17,14 @@ async def validate(value_text: str) -> bool:
     response = await client.completions.create(
         model="gpt-3.5-turbo-instruct",
         prompt=prompt,
-        temperature=0.0
+        temperature=0.0,
     )
     logger.info(f"{response}")
     answer = response.choices[0].text.strip().lower()
     return answer == "yes"
     
 
-async def value_interceptor_processing(user_id: str, run, tool):
+async def value_interceptor_processing(user_id: str, tool):
     try:
         arguments = json.loads(tool.function.arguments)
         value_text = arguments.get("value")
@@ -69,32 +69,35 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
         assistant_id=assistant_id
     )
 
-    if run.status == "requires_action":
+    while run.status == "requires_action":
         tool_outputs = []
         for tool in run.required_action.submit_tool_outputs.tool_calls:
             if tool.function.name == "save_value":
-                    output = await value_interceptor_processing(user_id, run, tool)
+                    output = await value_interceptor_processing(user_id, tool)
                     tool_outputs.append({
                             "tool_call_id": tool.id,
-                            "output": output
+                            "output": ""
                         })
-        if tool_outputs:
-            try:
-                    run = await client.beta.threads.runs.submit_tool_outputs_and_poll(
-                        thread_id=thread_id,
-                        run_id=run.id,
-                        tool_outputs=tool_outputs
-                    )
-            except Exception as e:
-                    logger.exception(f"Failed to submit tool outputs: {e}")
-                    return f"Failed to submit tool outputs. Error: {e}"  
+        if not tool_outputs:
+            break 
              
     if run.status == "completed":
         messages = await client.beta.threads.messages.list(thread_id=thread_id)
         assistant_messages = [
             msg for msg in messages.data if msg.role == "assistant"
         ]
+        logger.info(f"{run}\n\n")
+        logger.info(f"{messages}\n\n")
         last_message = assistant_messages[0]
-        answer = last_message.content[0].text.value.strip()
-        return answer
+        
+        logger.info(f"{last_message.content[0].text.annotations[0].text}\n\n")
+        
+        answer = last_message.content[0].text.value.strip() 
+        if last_message.content[0].text.annotations[0].text:
+            import re
+            text = re.findall(r"【.*?†(\w+)\.docx】", last_message.content[0].text.annotations[0].text)
+    
+            answer += text[0]
+        logger.info(f'{text}')
+        return answer 
     return f"Failed to create an answer. Run status {run.status}"

@@ -6,7 +6,7 @@ import os
 async def create_vector_store():
     client = settings.get_ai_settings()
     vector_store = await client.vector_stores.create(name="Emotional Statements")
-    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../trevoznost.docx")
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../anxiety.docx")
     
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}" )
@@ -21,6 +21,7 @@ async def create_vector_store():
 
     response = await client.beta.assistants.update(
         assistant_id=settings.get_assistant(),
+        # instructions="Do not mention file names or sources in your answers. Give answers directly, without citing any documents other than the one at the very end.",
         tool_resources={
             "file_search": {
                 "vector_store_ids": [vector_store.id]
