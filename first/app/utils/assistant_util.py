@@ -88,7 +88,7 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
         logger.info(f"{messages}\n\n")
         last_message = assistant_messages[0]
         
-        logger.info(f"{last_message.content[0].text.annotations[0].text}\n\n")
+        # logger.info(f"{last_message.content[0].text.annotations[0].text}\n\n")
         
         answer = last_message.content[0].text.value.strip() 
         if last_message.content[0].text.annotations[0].text:
@@ -96,6 +96,6 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
             text = re.findall(r"【.*?†(\w+)\.docx】", last_message.content[0].text.annotations[0].text)
     
             answer += text[0]
-        logger.info(f'{text}')
+            logger.info(f'{text}')
         return answer 
     return f"Failed to create an answer. Run status {run.status}"
