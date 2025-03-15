@@ -79,7 +79,6 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
     if run.status == "requires_action":
         tool_outputs = []
         for tool in run.required_action.submit_tool_outputs.tool_calls:
-            logging.warning(tool, tool.function.name, tool.function.arguments)
             if tool.function.name == "save_value":
                     output = await value_interceptor_processing(user_id, run, tool)
                     tool_outputs.append({
@@ -99,18 +98,10 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
              
     if run.status == "completed":
         messages = await client.beta.threads.messages.list(thread_id=thread_id)
-        logging.warning(messages)
         assistant_messages = [
             msg for msg in messages.data if msg.role == "assistant"
         ]
         last_message = assistant_messages[0]
         answer = last_message.content[0].text.value.strip()
-        filename = None
-        logging.warning(run)
-        if hasattr(run, "usage") and hasattr(run.usage, "file_ids"):
-            logging.warning("RUN USAGE", run.usage, "---------", run.usage.file_ids)
-            file_ids = run.usage.file_ids
-            if file_ids:
-                filename = await client.files.retrieve(file_ids[0])
         return answer
     return f"Failed to create an answer. Run status {run.status}"
