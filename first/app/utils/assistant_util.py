@@ -69,7 +69,7 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
         assistant_id=assistant_id
     )
 
-    while run.status == "requires_action":
+    if run.status == "requires_action":
         tool_outputs = []
         for tool in run.required_action.submit_tool_outputs.tool_calls:
             if tool.function.name == "save_value":
@@ -78,8 +78,6 @@ async def ask_question(user_id: str, question: str, state: FSMContext):
                             "tool_call_id": tool.id,
                             "output": ""
                         })
-        if not tool_outputs:
-            break 
              
     if run.status == "completed":
         messages = await client.beta.threads.messages.list(thread_id=thread_id)
