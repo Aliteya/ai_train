@@ -1,18 +1,45 @@
 from ..core import settings
 
 from openai import AsyncOpenAI
-import tempfile
+import uuid   
+import asyncio
+import os
 
 async def get_transcription(audio: bytes):
+    print("транскрипция")
     client = AsyncOpenAI(api_key=settings.get_llm_key())
-    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=True) as temp_file:
-        temp_file.write(audio)
-        response = client.audio.transcriptions.create(
+
+    file_name = f"input_audio_{uuid.uuid4()}.wav"
+    with open(file_name, "wb") as f:
+        f.write(audio)
+    with open(file_name, "rb") as f: 
+        response = await client.audio.transcriptions.create(
             model="whisper-1",
-            file=temp_file
+            file=f
         )
+    os.remove(file_name)
+    print(response.text)
     return response.text
 
 async def voice_acting(text: str):
-       client = AsyncOpenAI(api_key=settings.get_llm_key())
-       response = await "дописать"
+    print("озвучка")
+    client = AsyncOpenAI(api_key=settings.get_llm_key())
+    response = await client.audio.speech.create(
+            model="gpt-4o-mini-tts", 
+            voice="alloy",
+            input=text
+        )
+    for chunk in response.iter_bytes():
+        print("кидаю чанк")
+        yield chunk
+        await asyncio.sleep(0)
+    # async for chunk in response.iter_bytes():
+    #     print("кидаю чанк")
+    #     yield chunk
+
+    # async def stream_audio():
+    #     async for chunk in response.iter_bytes():
+    #         print("кидаю чанк")
+    #         yield chunk
+    # return await stream_audio()
+       

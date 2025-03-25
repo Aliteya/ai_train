@@ -2,7 +2,10 @@ from collections.abc import AsyncIterator
 from typing import Callable
 from agents import Agent, Runner, TResponseInputItem
 from agents.voice import VoiceWorkflowBase, VoiceWorkflowHelper
+from agents import set_default_openai_key
+from ..core import settings
 
+set_default_openai_key(settings.get_llm_key())
 
 client_agent = Agent(
     name="customer", 
@@ -21,7 +24,7 @@ class MyWorkflow(VoiceWorkflowBase):
                                     "content": transcription})
         
         result = Runner.run_streamed(self._current_agent, self._input_history)
-
+        
         async for chunk in VoiceWorkflowHelper.stream_text_from(result):
             yield chunk
 
