@@ -107,6 +107,10 @@ html ="""
                         // Очищаем чанки
                         audioChunks = [];
                     }
+
+                    // Возвращаем кнопки в исходное состояние
+                    document.getElementById("startRecording").disabled = false;
+                    document.getElementById("stopRecording").disabled = true;
                 };
 
                 // Начинаем запись
@@ -124,11 +128,7 @@ html ="""
         document.getElementById("stopRecording").addEventListener("click", () => {
             if (mediaRecorder && mediaRecorder.state === "recording") {
                 mediaRecorder.stop(); // Останавливаем запись
-                document.getElementById("startRecording").disabled = false;
-                document.getElementById("stopRecording").disabled = true;
-
                 console.log("Запись остановлена.");
-                console.log("Закрываем WebSocket-соединение...");
             }
         });
 
@@ -175,38 +175,35 @@ async def root():
 async def voice_endpoint(websocket: WebSocket):
     logger.info("Попытка принять WebSocket-соединение...")
     await websocket.accept()
+
     print("соединение есть ")
     try: 
-        print("аудио получаем")
-        while True:
-            try:
-                data = await websocket.receive_bytes()
-                if not data:
-                    break
-                audio = data
-                if audio:
-                    break
+        while True: 
+            
+                print("аудио получаем")
+                while True:
+                    try:
+                        data = await websocket.receive_bytes()
+                        if not data:
+                            break
+                        audio = data
+                        if audio:
+                            break
+                        
+                    except WebSocketDisconnect:
+                        print("Клиент закрыл соединение. Завершаем цикл.")
+                        break
+                transcription = await get_transcription(audio)
+                print(transcription)
+                workflow = MyWorkflow(on_start=lambda text: print(f"обрабатываю вопрос"))
                 
-            except WebSocketDisconnect:
-                print("Клиент закрыл соединение. Завершаем цикл.")
-                break
-            # print("в цикле")
-            # data = await websocket.receive_text()
-            # print(data)
-            # if not data:
-            #     break
+                full_text = ""
+                async for chunk in workflow.run(transcription):
+                    print(f"Сгенерированный текстовый чанк: {chunk}")
+                    full_text += chunk
+                full_audio = await voice_acting(full_text)
 
-            # audio += data
-        transcription = await get_transcription(audio)
-        print(transcription)
-        workflow = MyWorkflow(on_start=lambda text: print(f"обрабатываю вопрос"))
-        async def process_and_send():
-            async for chunk in workflow.run(transcription):
-                async for audio_chunk in voice_acting(chunk):
-                    await websocket.send_bytes(audio_chunk)
-        await process_and_send()
-
+                await websocket.send_bytes(full_audio)
     except Exception as e:
         logger.error(f"Ошибка при обработке WebSocket: {e}", exc_info=True)
         await websocket.close()
-

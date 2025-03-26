@@ -29,17 +29,16 @@ async def voice_acting(text: str):
             voice="alloy",
             input=text
         )
+    print("Собираем полное аудио...")
+    full_audio = b""
     for chunk in response.iter_bytes():
-        print("кидаю чанк")
-        yield chunk
-        await asyncio.sleep(0)
-    # async for chunk in response.iter_bytes():
+        full_audio += chunk
+    return full_audio
+    
+
+    # for chunk in response.iter_bytes():
     #     print("кидаю чанк")
     #     yield chunk
+    #     await asyncio.sleep(0)
 
-    # async def stream_audio():
-    #     async for chunk in response.iter_bytes():
-    #         print("кидаю чанк")
-    #         yield chunk
-    # return await stream_audio()
        
